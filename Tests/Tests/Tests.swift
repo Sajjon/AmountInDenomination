@@ -29,59 +29,36 @@ final class Tests: XCTestCase {
         )
     }
     
+    func testUInt256BoundMin() {
+        XCTAssertEqual(UInt256Bound.leastNormalMagnitude, 0)
+    }
+    
+    func testSuperset() {
+        let superset = try! UInt256(magnitude: 1)
+        XCTAssertEqual(
+            UInt256NonZero(other: superset).magnitude,
+            1
+        )
+    }
+    
+    func testUInt256NonZeroBoundMin() {
+        XCTAssertEqual(UInt256NonZeroBound.greatestFiniteMagnitude, UInt256Bound.greatestFiniteMagnitude)
+        XCTAssertEqual(UInt256NonZeroBound.leastNormalMagnitude, 1)
+    }
+    
     func testAssertThrowsUInt256WithMaxAmountPlus1() {
         assertThat(code: try UInt256(magnitude: UInt256Bound.greatestFiniteMagnitude + 1), throws: ValueError.valueTooBig)
     }
     
-    func testInt256Max() {
-        XCTAssertEqual(
-            try Int256(sign: .plus, magnitude: "57896044618658097711785492504343953926634992332820282019728792003956564819967").magnitude,
-            Int256Bound.greatestFiniteMagnitude
-        )
-    }
-    
-    func testInt256Min() {
-        XCTAssertEqual(
-            try Int256(sign: .minus, magnitude: "57896044618658097711785492504343953926634992332820282019728792003956564819967").magnitude,
-            Int256Bound.leastNormalMagnitude
-        )
-    }
-    
-    
-    
-//    func testCheckIfUnsignedNumeric() {
-//        func assertIsUnsigned<A>(type: A.Type) {
-//            XCTAssertTrue(type is UnsignedNumeric.Type, "Expected type: \(type) to be UnsignedNumeric")
-//        }
-//
-//        assertIsUnsigned(type: BigUInt.self)
-//        assertIsUnsigned(type: UInt64.self)
-//        assertIsUnsigned(type: UInt256Bound.self)
-//        assertIsUnsigned(type: UInt256.self)
-//
-//    }
-//
-//    func testCheckIfSigned() {
-//        func assertIsSigned<A>(type: A.Type, expected: Bool = true) where A: AmountType {
-//            XCTAssert(A.isSigned == expected)
-//        }
-//
-////        assertIsSigned(type: BigUInt.self)
-////        assertIsSigned(type: UInt64.self)
-////        assertIsSigned(type: UInt256Bound.self)
-////        assertIsSigned(type: UInt256.self)
-//
-//    }
-        
     static var allTests = [
         ("testPositiveSupplyFromPico", testPositiveSupplyFromPico),
         ("testNonNegativeSupplyFromPico", testNonNegativeSupplyFromPico),
         ("testAssertThrowsPositiveSupplyWithAmount0", testAssertThrowsPositiveSupplyWithAmount0),
         ("testUInt256Max", testUInt256Max),
+        ("testUInt256BoundMin", testUInt256BoundMin),
+        ("testUInt256NonZeroBoundMin", testUInt256NonZeroBoundMin),
         ("testAssertThrowsUInt256WithMaxAmountPlus1", testAssertThrowsUInt256WithMaxAmountPlus1),
-        ("testInt256Max", testInt256Max),
-        ("testInt256Min", testInt256Min),
-//        ("testCheckIfUnsignedNumeric", testCheckIfUnsignedNumeric),
+        ("testSuperset", testSuperset),
     ]
 }
 

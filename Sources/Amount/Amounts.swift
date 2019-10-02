@@ -18,7 +18,7 @@ public extension UInt256Bound {
     static var leastNormalMagnitude: Magnitude { 0 }
 }
 
-public typealias UInt256 = UnsignedAmount<UInt256Bound>
+public typealias UInt256 = UnsignedAmount<UInt256Bound, NoTrait>
 
 public struct NonNegativeSupplyBound: ValueBound {}
 public extension NonNegativeSupplyBound {
@@ -34,14 +34,54 @@ public extension PositiveSupplyBound {
     static var leastNormalMagnitude: Magnitude { 1 }
 }
 
-public typealias NonNegativeSupply = UnsignedAmount<NonNegativeSupplyBound>
-public typealias PositiveSupply = UnsignedAmount<PositiveSupplyBound>
+public typealias NonNegativeSupply = UnsignedAmount<NonNegativeSupplyBound, SupplyAmountTrait>
+public typealias PositiveSupply = UnsignedAmount<PositiveSupplyBound, SupplyAmountTrait>
 
-public struct Int256Bound: ValueBound {}
-public extension Int256Bound {
-    typealias Magnitude = BigUInt
-    static var greatestFiniteMagnitude: Magnitude { Magnitude(2).power(255) - 1 }
-    static var leastNormalMagnitude: Magnitude { greatestFiniteMagnitude }
+public protocol ValueBoundWhichIsSubsetOfOther: ValueBound where Self.Magnitude == Superset.Magnitude {
+    associatedtype Superset: ValueBound
+}
+public extension ValueBoundWhichIsSubsetOfOther {
+    
+    static var greatestFiniteMagnitude: Magnitude { Superset.greatestFiniteMagnitude }
+    
+    static var leastNormalMagnitude: Magnitude { Superset.leastNormalMagnitude }
 }
 
-public typealias Int256 = SignedAmount<Int256Bound>
+public struct UInt256NonZeroBound: ValueBoundWhichIsSubsetOfOther {}
+public extension UInt256NonZeroBound {
+    typealias Superset = UInt256Bound
+    typealias Magnitude = Superset.Magnitude
+    static var leastNormalMagnitude: Magnitude { 1 }
+}
+
+public typealias UInt256NonZero = UnsignedAmount<UInt256NonZeroBound, NoTrait>
+
+public extension UnsignedAmountType where Bound: ValueBoundWhichIsSubsetOfOther {
+    init<Other>(other: Other) where Other: UnsignedAmountType, Self.Bound.Superset == Other.Bound, Other.Trait == Self.Trait {
+        do {
+            try self.init(magnitude: other.magnitude, denomination: other.denomination)
+        } catch {
+            incorrectImplementationShouldAlwaysBeAble(to: "Create from Other if `Bound: ValueBoundWhichIsSubsetOfOther`", error)
+        }
+    }
+}
+
+internal func incorrectImplementation(
+    _ reason: String? = nil,
+    _ file: String = #file,
+    _ line: Int = #line
+) -> Never {
+    let reasonString = reason != nil ? "`\(reason!)`" : ""
+    let message = "Incorrect implementation: \(reasonString),\nIn file: \(file), line: \(line)"
+    fatalError(message)
+}
+
+internal func incorrectImplementationShouldAlwaysBeAble(
+    to reason: String,
+    _ error: Swift.Error? = nil,
+    _ file: String = #file,
+    _ line: Int = #line
+) -> Never {
+    let errorString = error.map { ", error: \($0) " } ?? ""
+    incorrectImplementation("Should always be to: \(reason)\(errorString)")
+}

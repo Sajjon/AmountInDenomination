@@ -8,7 +8,7 @@ extension BigUInt: MagnitudeType {
 }
 extension BigInt: MagnitudeType {}
 
-public struct UnsignedAmount<Bound>: UnsignedAmountType where Bound: ValueBound {
+public struct UnsignedAmount<Bound, Trait>: UnsignedAmountType where Bound: ValueBound, Trait: AmountTrait {
  
     public typealias Magnitude = Bound.Magnitude
     
@@ -26,6 +26,10 @@ public struct UnsignedAmount<Bound>: UnsignedAmountType where Bound: ValueBound 
 public extension UnsignedAmount {
     typealias Words = Bound.Magnitude.Words
     typealias IntegerLiteralType = Bound.Magnitude.IntegerLiteralType
+}
+
+public extension UnsignedAmount {
+    var denomination: Denomination { .min }
 }
 
 // MARK: - Numeric Init
